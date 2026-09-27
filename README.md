@@ -1,109 +1,188 @@
 # Quiz Culture
 
-Jeu de quiz avec un backend Laravel et un frontend React + TypeScript.
+Projet de quiz culturel développé en React + TypeScript avec une API Laravel et une base MySQL.
 
-## Prerequis
+## Objectif
 
-- PHP 8 avec `pdo_mysql` active
-- Composer
+Créer une application de quiz rapide, visuelle et mobile-first, avec :
+- choix de catégorie,
+- affichage des questions une par une,
+- timer de 30 secondes,
+- calcul du score,
+- affichage aléatoire des réponses.
+
+Le cœur fonctionnel de l’application est le frontend, qui gère l’expérience utilisateur et la logique du jeu. Le backend sert de source de données et de support pour la récupération des questions et catégories.
+
+---
+
+## Stack technique
+
+- Frontend : React + TypeScript + Vite
+- Backend : Laravel + PHP
+- Base de données : MySQL
+- Style : CSS personnalisé
+
+---
+
+## Prérequis
+
 - Node.js et npm
+- PHP 8
+- Composer
 - MySQL
+- Une base nommée `quiz` disponible localement
 
-## Installation du backend
+---
+
+## Installation
+
+### 1) Backend Laravel
 
 Dans le dossier `back` :
 
 ```powershell
-copy .env.example .env
 composer install
 php artisan key:generate
-```
-
-Ouvre ensuite `back/.env` et configure les acces MySQL de ton ordinateur :
-
-```env
-DB_DATABASE=quiz
-DB_USERNAME=root
-DB_PASSWORD=ton_mot_de_passe_mysql
-```
-
-Cree la base vide `quiz` dans MySQL, puis execute :
-
-```powershell
 php artisan migrate
-php artisan db:seed
 php artisan serve --host=127.0.0.1 --port=8000
 ```
 
-Le backend sera accessible sur http://127.0.0.1:8000.
+Vérifie que le fichier `back/.env` contient bien les bonnes informations de connexion MySQL :
 
-## Installation du frontend
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=quiz
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-Dans un autre terminal, dans `frontend` :
+Si la base n’existe pas encore, crée-la dans MySQL avant de lancer les migrations.
+
+### 2) Frontend React
+
+Dans le dossier `frontend` :
 
 ```powershell
 npm install
-copy .env.example .env
 npm run dev -- --host 127.0.0.1 --port 5173
 ```
 
-Le frontend sera accessible sur http://127.0.0.1:5173.
+Le frontend sera alors accessible sur :
 
-## Export de la base
+```text
+http://127.0.0.1:5173
+```
 
-Le fichier `back/quiz.sql` contient un export de la base `quiz` avec les categories et les questions. Pour le restaurer dans MySQL :
+L’API Laravel est attendue sur :
 
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+## Lancement du projet
+
+Ouvrir deux terminaux :
+
+1. Backend :
 ```powershell
-mysql -u root -p < quiz.sql
+cd back
+php artisan serve --host=127.0.0.1 --port=8000
 ```
 
-L’URL de l’API peut être changee dans `frontend/.env` avec :
-
-```env
-VITE_API_URL=http://127.0.0.1:8000
+2. Frontend :
+```powershell
+cd frontend
+npm run dev -- --host 127.0.0.1 --port 5173
 ```
+
+---
 
 ## Fonctionnement
 
-- La base contient plusieurs questions par categorie.
-- Chaque partie prend 10 questions aleatoires.
-- Chaque question affiche 4 reponses.
-- `reponse1` est la bonne reponse dans les donnees Laravel.
-- Le frontend affiche la bonne reponse en vert et une mauvaise reponse en rouge.
-- Chaque question possede dix reponses en base ; quatre sont tirees aleatoirement et affichees.
-- Chaque question dure trente secondes. Sans reponse, la question suivante est lancee automatiquement.
-- L’interface est mobile-first et s’adapte aux grands ecrans.
+- L’utilisateur choisit une catégorie.
+- Une partie démarre avec 10 questions tirées aléatoirement.
+- Chaque question affiche 4 réponses mélangées.
+- Le timer est de 30 secondes pour chaque question.
+- Le score augmente si la bonne réponse est sélectionnée.
+- L’écran final affiche le résultat final.
+- Le front mélange les réponses pour éviter que la bonne réponse soit toujours en position fixe.
 
-## Endpoints de l’API
+---
 
-| Methode | Endpoint | Utilisation |
+## API Laravel
+
+Routes principales :
+
+| Méthode | Endpoint | Description |
 | --- | --- | --- |
-| GET | `/api/categories` | Recuperer les categories |
-| GET | `/api/questions` | Recuperer les questions et leurs reponses |
-| POST | `/api/questions` | Ajouter une question |
-| PUT | `/api/questions/{id}` | Modifier une question |
-| DELETE | `/api/questions/{id}` | Supprimer une question |
+| GET | `/api/categories` | Récupère les catégories |
+| GET | `/api/questions` | Récupère les questions |
+| POST | `/api/questions` | Ajoute une question |
+| PUT | `/api/questions/{id}` | Modifie une question |
+| DELETE | `/api/questions/{id}` | Supprime une question |
 
-## Choix techniques et architecture
+---
 
-- React + TypeScript : composants reutilisables et typage des donnees du quiz.
-- Laravel/PHP : API REST, validation des formulaires et interface d’administration.
-- MySQL : stockage relationnel durable des categories et questions.
-- Vite : outil de developpement et de build du frontend React.
-- `App.tsx` gere l’orchestration de la partie ; `components/` contient le logo, les cartes, le timer et les boutons de reponse.
+## Structure du projet
 
-## Repartition des missions
+```text
+Tp_Quiz/
+├── back/               # API Laravel
+├── frontend/           # Application React
+├── README.md           # Documentation du projet
+├── .gitignore
+└── ...
+```
 
-A completer par le groupe avant le rendu Moodle :
+---
 
-| Membre | Mission |
-| --- | --- |
-| Nom 1 | Frontend React, TypeScript et design |
-| Nom 2 | API Laravel et base MySQL |
-| Nom 3 | Questions, tests et documentation |
+## Points importants
 
-## Presentation orale
+- La logique de jeu est principalement côté frontend.
+- Le backend est utilisé pour récupérer les données du quiz.
+- Les réponses sont affichées dans un ordre aléatoire pour éviter le biais de la “bonne réponse toujours en première position”.
+- Une base MySQL fonctionnelle est nécessaire au bon fonctionnement de l’API.
 
-La presentation peut suivre cet ordre : choix graphique, endpoints API, choix de Laravel et MySQL, architecture React, demonstration du timer et du score, extrait de code, difficultes rencontrees et solutions.
+---
 
-Ne partage jamais les fichiers `.env`. Ils contiennent les mots de passe locaux. Partage uniquement `.env.example`.
+## Difficultés rencontrées
+
+- Gestion des données de quiz depuis l’API.
+- Alignement entre données Laravel et affichage React.
+- Mélange des réponses pour garantir un comportement équitable.
+- Synchronisation entre le front et les catégories disponibles.
+
+---
+
+## Présentation orale
+
+La présentation peut suivre cet ordre :
+1. Choix techniques
+2. Interface utilisateur
+3. Logique du quiz
+4. Gestion des catégories et des questions
+5. Intégration avec l’API
+6. Difficultés rencontrées et solutions
+
+---
+
+## Sécurité / bonne pratique
+
+- Ne pas partager les fichiers `.env` contenant les identifiants locaux.
+- Ne publie que les fichiers `.env.example` ou les informations non sensibles.
+
+---
+
+## Auteur / équipe
+
+Projet réalisé dans le cadre du module de développement web / application interactive.
+
+---
+
+## Remarques
+
+Le projet est fonctionnel localement et prêt à être utilisé en mode développement. Il peut être amélioré davantage côté backend avec une vraie modélisation des catégories, validation des données et protection des routes de modification.
