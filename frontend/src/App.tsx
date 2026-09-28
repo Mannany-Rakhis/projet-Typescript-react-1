@@ -8,7 +8,9 @@ type Question = { id: number; question: string; answers: string[]; correctAnswer
 type Category = { id: number; name: string; color: string; questions: Question[] }
 type ApiQuestion = Record<string, string | number | undefined>
 
+// URL de base de l'API Laravel.
 const API_BASE = `${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'}/api`
+// Palette utilisée pour chaque catégorie.
 const colors = ['#ffcc00', '#ff5edb', '#4dff88', '#4dd7ff']
 const fallbackQuestions = [
   [
@@ -82,6 +84,7 @@ const fallbackQuestions = [
   correctAnswer,
 })))
 
+// Données de secours si l'API est indisponible.
 function makeFallback(): Category[] {
   return ['Géographie', 'Cinéma', 'Sport', 'Culture Générale'].map((name, categoryIndex) => ({
     id: categoryIndex + 1,
@@ -94,10 +97,12 @@ function makeFallback(): Category[] {
   }))
 }
 
+// Mélange un tableau pour afficher les réponses dans un ordre aléatoire.
 function shuffle<T>(items: T[]): T[] {
   return [...items].sort(() => Math.random() - 0.5)
 }
 
+// Transforme une question récupérée depuis l'API en objet utilisé par le jeu.
 function apiQuestion(raw: ApiQuestion, index: number): Question {
   const answers = Array.from({ length: 10 }, (_, answerIndex) => String(raw[`reponse${answerIndex + 1}`] ?? '').trim()).filter(Boolean)
   const correctAnswer = String(raw.reponse1 ?? answers[0] ?? '')
@@ -128,6 +133,7 @@ async function loadCategories(): Promise<Category[]> {
 }
 
 function App() {
+  // État principal du jeu.
   const [categories, setCategories] = useState<Category[]>([])
   const [categoryIndex, setCategoryIndex] = useState(0)
   const [questionIndex, setQuestionIndex] = useState(0)
@@ -140,6 +146,7 @@ function App() {
   useEffect(() => { void loadCategories().then(setCategories) }, [])
 
   const category = categories[categoryIndex]
+  // Gère le timer pendant une question.
   useEffect(() => {
     if (!category || screen !== 'question' || selectedAnswer !== null) return
 
@@ -168,15 +175,20 @@ function App() {
   const questionsForGame = activeQuestions.length ? activeQuestions : category.questions.slice(0, 10)
   const question = questionsForGame[questionIndex]
 
+  // Vérifie la bonne réponse et augmente le score.
   const chooseAnswer = (answerIndex: number) => {
     if (selectedAnswer !== null) return
     setSelectedAnswer(answerIndex)
     if (question.answers[answerIndex] === question.correctAnswer) setScore((value) => value + 1)
   }
+
+  // Passe à la question suivante.
   const nextQuestion = () => {
     if (questionIndex + 1 >= questionsForGame.length) setScreen('result')
     else { setQuestionIndex((value) => value + 1); setSelectedAnswer(null) }
   }
+
+  // Lance une partie pour la catégorie sélectionnée.
   const startGame = () => { setActiveQuestions(shuffle(category.questions).slice(0, 10)); setQuestionIndex(0); setScore(0); setSelectedAnswer(null); setTimeLeft(30); setScreen('question') }
   const selectCategory = (index: number) => { setCategoryIndex(index); setActiveQuestions([]); setQuestionIndex(0); setSelectedAnswer(null) }
   const goHome = () => { setActiveQuestions([]); setSelectedAnswer(null); setScreen('home') }
